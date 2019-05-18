@@ -14,9 +14,9 @@ models = require('./models')
 
 
 app.get('/api/getData', (req, res) => {
-  models.NpReport.findAll().then(result => res.json(result))
-  console.log(result)
-  res.json({success: true, message:"Data is being populated..."})
+  models.NpReport.findAll().then(result => {
+    res.json({success: true, message:"Data is being populated...", result: result})
+  }).catch(error => res.json({message: false, error: error}))
 })
 
 app.get('/api/getDecibelThreshold', (req,res) => {
