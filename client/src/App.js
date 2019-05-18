@@ -16,11 +16,11 @@ height: 100vh;
 `
 
 const PopupButton = styled.button`
-color: red;
+color: black;
 background-color: orange;
-width:100px;height:100px;
+width:200px;height:50px;
 position: fixed;
-top: 86vh;
+top: 93vh;
 left: 50%;
 transform: translateX(-50%);
 position: fixed;`
@@ -114,9 +114,6 @@ render(){
   return (
 
     <AppContainer>
-    <button onClick={this.testingClick}>
-    {this.state.dB}
-    </button>
     <button onClick={this.handlePastTwentyFourHoursClick}>Past 24 Hours</button>
     <button onClick={this.handleDecibelThreshold}>Decibel Threshold</button>
     <ReactMapGL
@@ -124,7 +121,7 @@ render(){
       mapboxApiAccessToken={MAPBOX_KEY}
       onViewportChange={(viewport) => this.setState({viewport})}
     />
-    <PopupButton onClick={this.handleClick}>POPUP</PopupButton>
+    <PopupButton onClick={this.handleClick}>Check Decibel Levels</PopupButton>
     <SweetAlert
     showCancel
     confirmBtnText="Send Data?"
