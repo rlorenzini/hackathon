@@ -2,6 +2,9 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const app = express()
+const moment = require('moment')
+const Sequelize = require('sequelize')
+const Op = Sequelize.Op
 const PORT = process.env.PORT || 8080
 
 app.use(cors())
@@ -11,10 +14,32 @@ models = require('./models')
 
 
 app.get('/api/getData', (req, res) => {
-  models.NpReport.findAll().then(result => res.json(result))
-  console.log(result)
-  res.json({success: true, message:"Data is being populated..."})
-}).catch(error => res.json({success: false, message:"ERROR: Data could not be populated..."}))
+  models.NpReport.findAll().then(result => {
+    res.json({success: true, message:"Data is being populated...", result: result})
+  }).catch(error => res.json({message: false, error: error}))
+})
+
+app.get('/api/getDecibelThreshold', (req,res) => {
+  models.NpReport.findAll({
+    where: {
+    decibel: {
+      [Op.gte]: 85
+      }
+    }
+  }).then(result => res.json(result))
+})
+
+app.get('/api/getPastTwentyFourHoursData', (req,res) => {
+  // let day = new Date();
+  // console.log(day.toString())
+  models.NpReport.findAll({
+    where: {
+      createdAt: {
+        [Op.gte]: moment().subtract(1, 'days').toDate()
+      }
+    }
+  }).then(result => res.json(result))
+})
 
 
 app.post('/api/reading', (req,res) => {
@@ -32,6 +57,8 @@ app.post('/api/reading', (req,res) => {
     res.json({sucess: false, message:"Reading could not be saved", error: error})
   })
 })
+
+
 
 
 app.listen(PORT,function(){
