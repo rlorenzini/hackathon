@@ -1,5 +1,4 @@
 import React,{Component} from 'react';
-// import logo from './logo.svg';
 import './App.css';
 import {MAPBOX_KEY} from "./.env.json"
 import ReactMapGL from 'react-map-gl';
@@ -43,6 +42,8 @@ class App extends Component {
     }
   };
 }
+
+
 testingClick=()=>{
   const meter = new DecibelMeter('unique-id');
   meter.sources.then(sources => {
@@ -57,12 +58,24 @@ testingClick=()=>{
   meter.on('sample', (dB, percent, value) => console.log(dB))
   meter.on('sample', (dB, percent, value) => this.setState({dB:dB}))
 }
+
 handleClick=()=>{
   this.setState({
     visiblePopup:true
   })
   console.log(this.state.visiblePopup)
 }
+
+handlePastTwentyFourHoursClick = () => {
+  fetch('http://localhost:8080/api/getPastTwentyFourHoursData')
+  .then(response => response.json()).then(json => console.log(json))
+}
+
+handleDecibelThreshold = () => {
+  fetch('http://localhost:8080/api/getDecibelThreshold')
+  .then(response => response.json()).then(json => console.log(json))
+}
+
 render(){
   return (
 
@@ -70,6 +83,8 @@ render(){
     <button onClick={this.testingClick}>
     {this.state.dB}
     </button>
+    <button onClick={this.handlePastTwentyFourHoursClick}>Past 24 Hours</button>
+    <button onClick={this.handleDecibelThreshold}>Decibel Threshold</button>
     <ReactMapGL
       {...this.state.viewport}
       mapboxApiAccessToken={MAPBOX_KEY}
