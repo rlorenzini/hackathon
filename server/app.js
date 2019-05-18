@@ -6,7 +6,11 @@ const PORT = process.env.PORT || 8080
 
 app.use(cors())
 app.use(bodyParser.json())
+<<<<<<< HEAD
 models = require('/.models')
+=======
+models = require('./models')
+>>>>>>> development
 
 app.get('/api/getData', (req, res) => {
   models.NpReport.findAll().then(result => res.json(result))
@@ -16,13 +20,19 @@ app.get('/api/getData', (req, res) => {
 
 
 app.post('/api/reading', (req,res) => {
-  let lat = req.body.lat
-  let long = req.body.long
-  let decibel = req.body.decibel
-  console.log(lat)
-  console.log(long)
-  console.log(decibel)
-  res.json({message: "Data was saved to database..."})
+  let latitude = parseFloat(req.body.latitude)
+  let longitude = parseFloat(req.body.longitude)
+  let decibel = parseFloat(req.body.decibel)
+  let reading = models.NpReport.build({
+    latitude: latitude,
+    longitude: longitude,
+    decibel: decibel
+  })
+  reading.save().then(reading => {
+    res.json({success:true, message:"Decibel reading was saved to database."})
+  }).catch(error => {
+    res.json({sucess: false, message:"Reading could not be saved", error: error})
+  })
 })
 
 
