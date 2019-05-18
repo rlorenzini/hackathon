@@ -2,6 +2,8 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const app = express()
+const Sequelize = require('sequelize')
+const Op = Sequelize.Op
 const PORT = process.env.PORT || 8080
 
 app.use(cors())
@@ -14,8 +16,17 @@ app.get('/api/getData', (req, res) => {
   models.NpReport.findAll().then(result => res.json(result))
   console.log(result)
   res.json({success: true, message:"Data is being populated..."})
-}).catch(error => res.json({success: false, message:"ERROR: Data could not be populated..."}))
+})
 
+app.get('/api/getDecibelThreshold', (req,res) => {
+  models.NpReport.findAll({
+    where: {
+    decibel: {
+      [Op.gte]: 85
+      }
+    }
+  }).then(result => res.json(result))
+})
 
 app.post('/api/reading', (req,res) => {
   let latitude = parseFloat(req.body.latitude)
@@ -32,6 +43,8 @@ app.post('/api/reading', (req,res) => {
     res.json({sucess: false, message:"Reading could not be saved", error: error})
   })
 })
+
+
 
 
 app.listen(PORT,function(){
