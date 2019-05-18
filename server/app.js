@@ -14,8 +14,43 @@ models = require('./models')
 
 
 app.get('/api/getData', (req, res) => {
-  models.NpReport.findAll().then(result => {
-    res.json({success: true, message:"Data is being populated...", result: result})
+  models.NpReport.findAll().then(results => {
+    let features = []
+    console.log(results.id)
+    results.forEach(result => {
+      let id = result.id
+      let decibel = result.decibel
+      let longitude = result.longitude
+      let latitude = result.latitude
+      let time = result.createdAt
+      let feature = {
+        type: "Feature",
+        properties: {
+          id: id,
+          decibel: decibel,
+          time: time
+        },
+        geometry: {
+          type: "Point",
+          coordinates: [
+            longitude,
+            latitude
+          ]
+        }
+      }
+      features.push(feature)
+    })
+    let featureCollection = {
+      type: "FeatureCollection",
+      crs: {
+        type: "name",
+        properties: {
+          name: "urn:ogc:def:crs:OGC:1.3:CRS84"
+        },
+      },
+      features: features
+    }
+    res.json(featureCollection)
   }).catch(error => res.json({message: false, error: error}))
 })
 
