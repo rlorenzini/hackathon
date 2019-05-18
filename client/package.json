@@ -5,6 +5,7 @@
   "dependencies": {
     "decibel-meter": "^2.0.0",
     "react": "^16.8.6",
+    "react-bootstrap-sweetalert": "^4.4.1",
     "react-dom": "^16.8.6",
     "react-map-gl": "^4.1.2",
     "react-scripts": "3.0.1",

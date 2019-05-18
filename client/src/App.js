@@ -3,7 +3,8 @@ import React,{Component} from 'react';
 import './App.css';
 import {MAPBOX_KEY} from "./.env.json"
 import ReactMapGL from 'react-map-gl';
-import SweetAlert from 'sweetalert2-react';
+// import SweetAlert from 'sweetalert2-react';
+import SweetAlert from 'react-bootstrap-sweetalert';
 import DecibelMeter from 'decibel-meter';
 
 import styled from 'styled-components';
@@ -33,7 +34,10 @@ class App extends Component {
     height: window.innerHeight,
     width: window.innerWidth,
     show:false,
+    alert:null,
     dB:0,
+    latitude:0,
+    longitude:0,
     viewport: {
       width: "100vw",
       height: "100vh",
@@ -42,6 +46,29 @@ class App extends Component {
       zoom: 10,
     }
   };
+}
+componentDidMount() {
+    if('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        this.setState({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        })
+      })
+    }
+  }
+  submitData=()=>{
+    fetch('http://localhost:8080/api/reading', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body:JSON.stringify({
+        latitude: this.state.latitude,
+        longitude: this.state.longitude,
+        decibel: this.state.dB
+      })
+  }).then(this.setState({show:false}))
 }
 testingClick=()=>{
   const meter = new DecibelMeter('unique-id');
@@ -52,16 +79,25 @@ testingClick=()=>{
   setTimeout(function(){
     meter.stopListening()
   },5000)
-  console.log(meter)
+
   // meter.connectTo('not-real').catch(err => alert('Connection Error'))
   meter.on('sample', (dB, percent, value) => console.log(dB))
   meter.on('sample', (dB, percent, value) => this.setState({dB:dB}))
 }
 handleClick=()=>{
-  this.setState({
-    visiblePopup:true
+  this.setState({show:true})
+  const meter = new DecibelMeter('unique-id');
+  meter.sources.then(sources => {
+    meter.connect(sources[0])
   })
-  console.log(this.state.visiblePopup)
+  meter.listen()
+  setTimeout(function(){
+    meter.stopListening()
+  },5000)
+
+  // meter.connectTo('not-real').catch(err => alert('Connection Error'))
+  meter.on('sample', (dB, percent, value) => console.log(dB))
+  meter.on('sample', (dB, percent, value) => this.setState({dB:dB}))
 }
 render(){
   return (
@@ -75,12 +111,17 @@ render(){
       mapboxApiAccessToken={MAPBOX_KEY}
       onViewportChange={(viewport) => this.setState({viewport})}
     />
-    <PopupButton onClick={() => this.setState({show:true})}>POPUP</PopupButton>
-    <SweetAlert show={this.state.show}
-    title="POPUP"
-    text={this.state.dB}
-    onConfirm={()=>this.setState({show:false})}
-    />
+    <PopupButton onClick={this.handleClick}>POPUP</PopupButton>
+    <SweetAlert
+    showCancel
+    confirmBtnText="Send Data?"
+    confirmBtnBsStyle="danger"
+    cancelBtnBsStyle="default"
+    show={this.state.show}
+    title="Decibel Stuff"
+    onCancel={()=>this.setState({show:false})}
+    onConfirm={this.submitData}
+    >{this.state.dB}</SweetAlert>
     </AppContainer>
   );
 }
