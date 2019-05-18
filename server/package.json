@@ -13,6 +13,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.0",
     "express-session": "^1.16.1",
+    "moment": "^2.24.0",
     "pg": "^7.11.0",
     "pg-promise": "^8.7.2",
     "sequelize": "^5.8.6"

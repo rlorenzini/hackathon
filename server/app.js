@@ -2,6 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const app = express()
+const moment = require('moment')
 const Sequelize = require('sequelize')
 const Op = Sequelize.Op
 const PORT = process.env.PORT || 8080
@@ -27,6 +28,19 @@ app.get('/api/getDecibelThreshold', (req,res) => {
     }
   }).then(result => res.json(result))
 })
+
+app.get('/api/getPastTwentyFourHoursData', (req,res) => {
+  // let day = new Date();
+  // console.log(day.toString())
+  models.NpReport.findAll({
+    where: {
+      createdAt: {
+        [Op.gte]: moment().subtract(1, 'days').toDate()
+      }
+    }
+  }).then(result => res.json(result))
+})
+
 
 app.post('/api/reading', (req,res) => {
   let latitude = parseFloat(req.body.latitude)
