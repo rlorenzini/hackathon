@@ -65,8 +65,6 @@ app.get('/api/getDecibelThreshold', (req,res) => {
 })
 
 app.get('/api/getPastTwentyFourHoursData', (req,res) => {
-  // let day = new Date();
-  // console.log(day.toString())
   models.NpReport.findAll({
     where: {
       createdAt: {
