@@ -1,140 +1,177 @@
-import React,{Component} from 'react';
-import './App.css';
-import {MAPBOX_KEY} from "./.env.json"
-import ReactMapGL from 'react-map-gl';
-// import SweetAlert from 'sweetalert2-react';
-import SweetAlert from 'react-bootstrap-sweetalert';
-import DecibelMeter from 'decibel-meter';
+import React, { Component, Fragment } from "react";
+import { render } from "react-dom";
+import MapGL from "react-map-gl";
+// import ControlPanel from "./control-panel";
+import { json as requestJson } from "d3-request";
+import { MAPBOX_KEY } from "./.env.json";
+import { Sidebar } from "./Sidebar";
+import { Legend } from "./Legend";
+import { validateCoordinates } from "./validate-coordinates";
+import { adjustBadValues } from "./adjust-bad-values";
+import { PopupButton } from "./PopupButton";
+import { PopupComponent } from "./Popup.js";
 
-import styled from 'styled-components';
+const HEATMAP_SOURCE_ID = "decibel-source";
+const DATA_URL =
+  "https://noise-pollution-hackathon2019.herokuapp.com/api/getData";
+// "https://docs.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson"
 
-// const meter = new DecibelMeter('unique-id');
+export class App extends Component {
+  constructor(props) {
+    super(props);
 
-const AppContainer = styled.div`
-width: 100vw;
-height: 100vh;
-`
-
-const PopupButton = styled.button`
-color: black;
-background-color: orange;
-width:200px;height:50px;
-position: fixed;
-top: 95vh;
-left: 50%;
-transform: translateX(-50%);
-position: fixed;`
-
-class App extends Component {
-  constructor(){
-    super()
-
-  this.state = {
-    height: window.innerHeight,
-    width: window.innerWidth,
-    show:false,
-    alert:null,
-    dB:0,
-    latitude:0,
-    longitude:0,
-    viewport: {
-      width: "100vw",
-      height: "100vh",
-      latitude: 29.7604,
-      longitude: -95.3698,
-      zoom: 10,
-    }
-  };
-}
-componentDidMount() {
-    if('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        this.setState({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
-        })
-      })
-    }
-  }
-  submitData=()=>{
-    fetch('http://localhost:8080/api/reading', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
+    this.state = {
+      viewport: {
+        width: "100vw",
+        height: "100vh",
+        latitude: 29.7604,
+        longitude: -95.3698,
+        zoom: 9
       },
-      body:JSON.stringify({
-        latitude: this.state.latitude,
-        longitude: this.state.longitude,
-        decibel: this.state.dB
-      })
-  }).then(this.setState({show:false}))
+      popup: false,
+      data: null
+    };
+
+    this._mapRef = React.createRef();
+    this._handleMapLoaded = this._handleMapLoaded.bind(this);
+    this._handlePopupOpen = this._handlePopupOpen.bind(this);
+    this._handlePopupClose = this._handlePopupClose.bind(this);
+  }
+
+  _mkFeatureCollection = features => {
+    return { type: "FeatureCollection", features };
+  };
+
+  _mkHeatmapLayer = (id, source) => {
+    const MAX_ZOOM_LEVEL = 13;
+    return {
+      id,
+      source,
+      maxzoom: MAX_ZOOM_LEVEL,
+      type: "heatmap",
+      paint: {
+        // Increase the heatmap weight based on frequency and property magnitude
+        "heatmap-weight": {
+          property: "decibel",
+          type: "exponential",
+          stops: [[1, 0], [150, 1]]
+        },
+        // Increase the heatmap color weight weight by zoom level
+        // heatmap-intensity is a multiplier on top of heatmap-weight
+        "heatmap-intensity": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          0,
+          1,
+          MAX_ZOOM_LEVEL,
+          3
+        ],
+        // Adjust the heatmap radius by zoom level
+        "heatmap-radius": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          0,
+          2,
+          MAX_ZOOM_LEVEL,
+          20
+        ],
+        "heatmap-color": [
+          "interpolate",
+          ["linear"],
+          ["heatmap-density"],
+          0,
+          "rgba(236,222,239,0)",
+          0.2,
+          "#ffffb2",
+          0.4,
+          "#fecc5c",
+          0.6,
+          "#fd8d3c",
+          0.8,
+          "#f03b20",
+          1,
+          "#bd0026"
+        ]
+      }
+    };
+  };
+
+  _onViewportChange = viewport => this.setState({ viewport });
+
+  _getMap = () => {
+    return this._mapRef.current ? this._mapRef.current.getMap() : null;
+  };
+
+  _handleMapLoaded = event => {
+    const map = this._getMap();
+
+    requestJson(DATA_URL, (error, response) => {
+      if (!error) {
+        response = {
+          ...response,
+          features: response.features
+            .filter(validateCoordinates)
+            .map(adjustBadValues)
+        };
+        this.setState({
+          data: response
+        });
+        map.addSource(HEATMAP_SOURCE_ID, { type: "geojson", data: response });
+        map.addLayer(this._mkHeatmapLayer("heatmap-layer", HEATMAP_SOURCE_ID));
+      }
+    });
+  };
+
+  _handlePopupOpen() {
+    this.setState({
+      popup: true
+    });
+  }
+  
+  _handlePopupClose() {
+    this.setState({
+      popup: false
+    });
+  }
+
+  _setMapData = features => {
+    const map = this._getMap();
+    map &&
+      map
+        .getSource(HEATMAP_SOURCE_ID)
+        .setData(this._mkFeatureCollection(features));
+  };
+
+  render() {
+    const { viewport } = this.state;
+    console.log(this.state);
+    return (
+      <Fragment>
+        <MapGL
+          ref={this._mapRef}
+          {...viewport}
+          width="100%"
+          height="100%"
+          mapStyle="mapbox://styles/mapbox/dark-v9"
+          onViewportChange={this._onViewportChange}
+          mapboxApiAccessToken={MAPBOX_KEY}
+          onLoad={this._handleMapLoaded}
+        />
+        <Sidebar />
+        <div onClick={this._handlePopupOpen.bind(this)}>
+          <PopupButton />
+        </div>
+        {this.state.popup && (
+          <PopupComponent closePopup={this._handlePopupClose} />
+        )}
+        <Legend />
+      </Fragment>
+    );
+  }
 }
-testingClick=()=>{
-  const meter = new DecibelMeter('unique-id');
-  meter.sources.then(sources => {
-    meter.connect(sources[0])
-  })
-  meter.listen()
-  setTimeout(function(){
-    meter.stopListening()
-  },5000)
 
-  // meter.connectTo('not-real').catch(err => alert('Connection Error'))
-  meter.on('sample', (dB, percent, value) => console.log(dB))
-  meter.on('sample', (dB, percent, value) => this.setState({dB:dB}))
+export function renderToDOM(container) {
+  render(<App />, container);
 }
-
-handleClick=()=>{
-  this.setState({show:true})
-  const meter = new DecibelMeter('unique-id');
-  meter.sources.then(sources => {
-    meter.connect(sources[0])
-  })
-  meter.listen()
-  setTimeout(function(){
-    meter.stopListening()
-  },5000)
-
-  // meter.connectTo('not-real').catch(err => alert('Connection Error'))
-  meter.on('sample', (dB, percent, value) => console.log(dB))
-  meter.on('sample', (dB, percent, value) => this.setState({dB:dB}))
-}
-
-handlePastTwentyFourHoursClick = () => {
-  fetch('http://localhost:8080/api/getPastTwentyFourHoursData')
-  .then(response => response.json()).then(json => console.log(json))
-}
-
-handleDecibelThreshold = () => {
-  fetch('http://localhost:8080/api/getDecibelThreshold')
-  .then(response => response.json()).then(json => console.log(json))
-}
-
-render(){
-  return (
-
-    <AppContainer>
-    <button onClick={this.handlePastTwentyFourHoursClick}>Past 24 Hours</button>
-    <button onClick={this.handleDecibelThreshold}>Decibel Threshold</button>
-    <ReactMapGL
-      {...this.state.viewport}
-      mapboxApiAccessToken={MAPBOX_KEY}
-      onViewportChange={(viewport) => this.setState({viewport})}
-    />
-    <PopupButton onClick={this.handleClick}>Check Decibel Levels</PopupButton>
-    <SweetAlert
-    showCancel
-    confirmBtnText="Send Data?"
-    confirmBtnBsStyle="danger"
-    cancelBtnBsStyle="default"
-    show={this.state.show}
-    title="Decibel Stuff"
-    onCancel={()=>this.setState({show:false})}
-    onConfirm={this.submitData}
-    >{this.state.dB}</SweetAlert>
-    </AppContainer>
-  );
-}
-}
-
-export default App;
