@@ -1,4 +1,4 @@
-import React, { useState, Component } from "react";
+import React, { Component } from "react";
 import styled, { keyframes } from "styled-components";
 import DecibelMeter from "decibel-meter";
 import { fadeIn } from "react-animations";
@@ -38,12 +38,25 @@ const Backdrop = styled.div`
   background: rgba(0, 0, 0, 0.8);
 `;
 
+const ButtonLabel = styled.label`
+  color: white;
+  font-family: "Inconsolata", monospace;
+  font-weight: bold;
+  position: relative;
+  left: 50%;
+  &:hover {
+    cursor: pointer;
+  }
+`;
+
 const initialState = {
   lat: navigator.geolocation.lat,
   lng: navigator.geolocation.lng,
   dB: 0,
   averageDb: null,
-  errorVisible: false
+  errorVisible: false,
+  values: [],
+  showAverage: false
 };
 
 export class PopupComponent extends Component {
@@ -54,39 +67,85 @@ export class PopupComponent extends Component {
       ...initialState
     };
     this._meter = new DecibelMeter("unique-id");
-    this._handleClose = this._handleClose.bind(this);
+    this._handleSubmit = this._handleSubmit.bind(this);
+    this._submitAverage = this._submitAverage.bind(this);
+    this._stopMeter = this._stopMeter.bind(this);
   }
 
   componentDidMount() {
     this._meter.connectTo("default").catch(err => alert("Connection Error"));
     this._meter.listen();
-    this._meter.on("sample", (dB) => {
-      this.setState({ dB: dB > 0 ? Math.ceil(dB) : 0 });
+    this._meter.on("sample", dB => {
+      this.setState({
+        dB: Math.ceil(dB) + 100,
+        values: this.state.values.concat(dB + 100)
+      });
     });
+    setTimeout(async () => {
+      await this._stopMeter();
+      this._submitAverage();
+    }, 5000);
   }
 
-  async _handleClose() {
+  _submitAverage() {
+    this.setState({
+      showAverage: true
+    })
+  }
+
+  async _stopMeter() {
     try {
       this._meter.stopListening();
       await this._meter.disconnect();
     } catch (err) {
       throw Error(err);
     }
-    this.props.closePopup();
-  };
+  }
 
-  // const _handleSubmit = () => {};
+  _handleSubmit() {
+    fetch("https://noise-pollution-hackathon2019.herokuapp.com/api/reading", {
+      method: 'POST',
+      headers: {
+        'Content-Type':'application/json'
+      },
+      body: JSON.stringify({
+        latitude: this.state.lat,
+        longitude: this.state.lng,
+        decibel: this._getAverageDecibel()
+      }).then(() => this.props.closePopup())
+    })
+  }
+
+  _getAverageDecibel() {
+    const arr = this.state.values.filter(val => val > 10);
+    const sum = arr.reduce((memo, val) => {
+      return memo + val;
+    }, 0);
+    const average = sum / arr.length;
+    return Math.round(average * 100) / 100;
+  }
 
   render() {
     return (
       <OverlayContainer>
-        <StyledPopup>
-          <PopupContent>
-            <h2>{this.state.dB}</h2>
-          </PopupContent>
-        </StyledPopup>
-        <Backdrop onClick={this._handleClose} />
+        {this.state.showAverage ? (
+          <StyledPopup>
+            <PopupContent>
+              <h2>Average Reading: {this._getAverageDecibel()} dB</h2>
+                <ButtonLabel onClick={() => this._handleSubmit()}>
+                  Submit
+                </ButtonLabel>
+            </PopupContent>
+          </StyledPopup>
+        ) : (
+          <StyledPopup>
+            <PopupContent>
+              <h2>{this.state.dB} dB</h2>
+            </PopupContent>
+          </StyledPopup>
+        )}
+        <Backdrop />
       </OverlayContainer>
-    )
+    );
   }
-};
+}
