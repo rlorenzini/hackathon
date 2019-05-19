@@ -18,7 +18,7 @@ height: 100vh;
 const PopupButton = styled.button`
 color: black;
 background-color: orange;
-width:200px;height:50px;
+width:100px;height:50px;
 position: fixed;
 top: 93vh;
 left: 50%;
