@@ -73,6 +73,7 @@ export class PopupComponent extends Component {
   }
 
   componentDidMount() {
+    this.getGeolocation()
     this._meter.connectTo("default").catch(err => alert("Connection Error"));
     this._meter.listen();
     this._meter.on("sample", dB => {
@@ -112,8 +113,10 @@ export class PopupComponent extends Component {
         latitude: this.state.lat,
         longitude: this.state.lng,
         decibel: this._getAverageDecibel()
-      }).then(() => this.props.closePopup())
-    })
+      })
+    }).then(() => {
+      console.log('submit fired')
+      this.props.closePopup()})
   }
 
   _getAverageDecibel() {
@@ -123,6 +126,17 @@ export class PopupComponent extends Component {
     }, 0);
     const average = sum / arr.length;
     return Math.round(average * 100) / 100;
+  }
+
+  getGeolocation = async () => {
+    const position = await navigator.geolocation.getCurrentPosition(position => {
+      const { coords } = position;
+      const { latitude: lat, longitude: lng } = coords
+      this.setState({
+        lat: lat,
+        lng: lng
+      })
+    })
   }
 
   render() {
