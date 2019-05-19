@@ -18,7 +18,7 @@ height: 100vh;
 const PopupButton = styled.button`
 color: red;
 background-color: orange;
-width:100px;height:100px;
+width:100px;height:50px;
 position: fixed;
 top: 86vh;
 left: 50%;
@@ -124,7 +124,7 @@ render(){
       mapboxApiAccessToken={MAPBOX_KEY}
       onViewportChange={(viewport) => this.setState({viewport})}
     />
-    <PopupButton onClick={this.handleClick}>POPUP</PopupButton>
+    <PopupButton onClick={this.handleClick}>Check Decibel Level</PopupButton>
     <SweetAlert
     showCancel
     confirmBtnText="Send Data?"
