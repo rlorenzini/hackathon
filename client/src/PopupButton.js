@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 const StlyedPopupButton = styled.button`
   position: fixed;
-  bottom: 120px;
+  bottom: 90px;
   left: calc(50% - 300px);
   transform: translateX(50%);
   width: 150px;
@@ -18,7 +18,6 @@ const StlyedPopupButton = styled.button`
   font-weight: bold;
 
   z-index: 1;
-  position: relative;
   font-size: inherit;
   font-family: inherit;
   color: white;
