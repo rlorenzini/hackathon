@@ -121,7 +121,7 @@ export class PopupComponent extends Component {
         {this.state.showAverage ? (
           <StyledPopup>
             <PopupContent>
-              <h2>Average Reading: {this._getAverageDecibel()} dB˝</h2>
+              <h2>Average Reading: {this._getAverageDecibel()} dB</h2>
                 <ButtonLabel onClick={() => this.props.closePopup()}>
                   Submit
                 </ButtonLabel>
