@@ -25,7 +25,7 @@ export class App extends Component {
         width: "100vw",
         height: "100vh",
         latitude: 29.7604,
-        longitude: -95.3698,
+        longitude: -95.2228,
         zoom: 9
       },
       popup: false,
@@ -129,7 +129,7 @@ export class App extends Component {
       popup: true
     });
   }
-  
+
   _handlePopupClose() {
     this.setState({
       popup: false
@@ -154,6 +154,7 @@ export class App extends Component {
           {...viewport}
           width="100%"
           height="100%"
+          style={{ position: "fixed" }}
           mapStyle="mapbox://styles/mapbox/dark-v9"
           onViewportChange={this._onViewportChange}
           mapboxApiAccessToken={MAPBOX_KEY}
@@ -163,6 +164,7 @@ export class App extends Component {
         <div onClick={this._handlePopupOpen.bind(this)}>
           <PopupButton />
         </div>
+
         {this.state.popup && (
           <PopupComponent closePopup={this._handlePopupClose} />
         )}

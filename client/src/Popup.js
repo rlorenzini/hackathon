@@ -114,9 +114,7 @@ export class PopupComponent extends Component {
         longitude: this.state.lng,
         decibel: this._getAverageDecibel()
       })
-    }).then(() => {
-      console.log('submit fired')
-      this.props.closePopup()})
+    }).then(() => this.props.closePopup())
   }
 
   _getAverageDecibel() {
@@ -139,6 +137,7 @@ export class PopupComponent extends Component {
     })
   }
 
+
   render() {
     return (
       <OverlayContainer>
@@ -147,6 +146,7 @@ export class PopupComponent extends Component {
             <PopupContent>
               <h2>Average Reading: {this._getAverageDecibel()} dB</h2>
                 <ButtonLabel onClick={() => this._handleSubmit()}>
+
                   Submit
                 </ButtonLabel>
             </PopupContent>
