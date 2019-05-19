@@ -15,41 +15,7 @@ models = require('./models')
 
 app.get('/api/getData', (req, res) => {
   models.NpReport.findAll().then(results => {
-    let features = []
-    console.log(results.id)
-    results.forEach(result => {
-      let id = result.id
-      let decibel = result.decibel
-      let longitude = result.longitude
-      let latitude = result.latitude
-      let time = result.createdAt
-      let feature = {
-        type: "Feature",
-        properties: {
-          id: id,
-          decibel: decibel,
-          time: time
-        },
-        geometry: {
-          type: "Point",
-          coordinates: [
-            longitude,
-            latitude
-          ]
-        }
-      }
-      features.push(feature)
-    })
-    let featureCollection = {
-      type: "FeatureCollection",
-      crs: {
-        type: "name",
-        properties: {
-          name: "urn:ogc:def:crs:OGC:1.3:CRS84"
-        },
-      },
-      features: features
-    }
+    let featureCollection = geojsonConversion(results)
     res.json(featureCollection)
   }).catch(error => res.json({message: false, error: error}))
 })
@@ -61,7 +27,10 @@ app.get('/api/getDecibelThreshold', (req,res) => {
       [Op.gte]: 85
       }
     }
-  }).then(result => res.json(result))
+  }).then(results => {
+    let featureCollection = geojsonConversion(results)
+    res.json(featureCollection)
+  })
 })
 
 app.get('/api/getPastTwentyFourHoursData', (req,res) => {
@@ -71,7 +40,10 @@ app.get('/api/getPastTwentyFourHoursData', (req,res) => {
         [Op.gte]: moment().subtract(1, 'days').toDate()
       }
     }
-  }).then(result => res.json(result))
+  }).then(results => {
+    let featureCollection = geojsonConversion(results)
+    res.json(featureCollection)
+  })
 })
 
 
@@ -91,7 +63,43 @@ app.post('/api/reading', (req,res) => {
   })
 })
 
-
+geojsonConversion = (array) => {
+  let features = []
+  array.forEach(result => {
+    let id = result.id
+    let decibel = result.decibel
+    let longitude = result.longitude
+    let latitude = result.latitude
+    let time = result.createdAt
+    let feature = {
+      type: "Feature",
+      properties: {
+        id: id,
+        decibel: decibel,
+        time: time
+      },
+      geometry: {
+        type: "Point",
+        coordinates: [
+          longitude,
+          latitude
+        ]
+      }
+    }
+    features.push(feature)
+  })
+  let featureCollection = {
+    type: "FeatureCollection",
+    crs: {
+      type: "name",
+      properties: {
+        name: "urn:ogc:def:crs:OGC:1.3:CRS84"
+      },
+    },
+    features: features
+  }
+  return featureCollection
+}
 
 
 app.listen(PORT,function(){
