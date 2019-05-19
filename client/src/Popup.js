@@ -107,10 +107,11 @@ export class PopupComponent extends Component {
   }
 
   _getAverageDecibel() {
-    const sum = this.state.values.reduce((memo, val) => {
+    const arr = this.state.values.filter(val => val > 10);
+    const sum = arr.reduce((memo, val) => {
       return memo + val;
     }, 0);
-    const average = sum / this.state.values.length;
+    const average = sum / arr.length;
     return Math.round(average * 100) / 100;
   }
 
@@ -120,7 +121,7 @@ export class PopupComponent extends Component {
         {this.state.showAverage ? (
           <StyledPopup>
             <PopupContent>
-              <h2>Average Reading: {this._getAverageDecibel()}</h2>
+              <h2>Average Reading: {this._getAverageDecibel()} dB˝</h2>
                 <ButtonLabel onClick={() => this.props.closePopup()}>
                   Submit
                 </ButtonLabel>
