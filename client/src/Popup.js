@@ -73,6 +73,7 @@ export class PopupComponent extends Component {
   }
 
   componentDidMount() {
+    this.getGeolocation()
     this._meter.connectTo("default").catch(err => alert("Connection Error"));
     this._meter.listen();
     this._meter.on("sample", dB => {
@@ -102,8 +103,18 @@ export class PopupComponent extends Component {
     }
   }
 
-  async _handleSubmit() {
-   await new Promise(resolve => {setTimeout(() => {resolve()}, 200)});
+  _handleSubmit() {
+    fetch("https://noise-pollution-hackathon2019.herokuapp.com/api/reading", {
+      method: 'POST',
+      headers: {
+        'Content-Type':'application/json'
+      },
+      body: JSON.stringify({
+        latitude: this.state.lat,
+        longitude: this.state.lng,
+        decibel: this._getAverageDecibel()
+      })
+    }).then(() => this.props.closePopup())
   }
 
   _getAverageDecibel() {
@@ -115,6 +126,18 @@ export class PopupComponent extends Component {
     return Math.round(average * 100) / 100;
   }
 
+  getGeolocation = async () => {
+    const position = await navigator.geolocation.getCurrentPosition(position => {
+      const { coords } = position;
+      const { latitude: lat, longitude: lng } = coords
+      this.setState({
+        lat: lat,
+        lng: lng
+      })
+    })
+  }
+
+
   render() {
     return (
       <OverlayContainer>
@@ -122,7 +145,8 @@ export class PopupComponent extends Component {
           <StyledPopup>
             <PopupContent>
               <h2>Average Reading: {this._getAverageDecibel()} dB</h2>
-                <ButtonLabel onClick={() => this.props.closePopup()}>
+                <ButtonLabel onClick={() => this._handleSubmit()}>
+
                   Submit
                 </ButtonLabel>
             </PopupContent>
