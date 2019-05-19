@@ -18,9 +18,9 @@ height: 100vh;
 const PopupButton = styled.button`
 color: black;
 background-color: orange;
-width:100px;height:50px;
+width:200px;height:50px;
 position: fixed;
-top: 93vh;
+top: 95vh;
 left: 50%;
 transform: translateX(-50%);
 position: fixed;`
@@ -114,9 +114,6 @@ render(){
   return (
 
     <AppContainer>
-    <button onClick={this.testingClick}>
-    {this.state.dB}
-    </button>
     <button onClick={this.handlePastTwentyFourHoursClick}>Past 24 Hours</button>
     <button onClick={this.handleDecibelThreshold}>Decibel Threshold</button>
     <ReactMapGL
