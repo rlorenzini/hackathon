@@ -114,6 +114,9 @@ render(){
   return (
 
     <AppContainer>
+    <button onClick={this.testingClick}>
+    {this.state.dB}
+    </button>
     <button onClick={this.handlePastTwentyFourHoursClick}>Past 24 Hours</button>
     <button onClick={this.handleDecibelThreshold}>Decibel Threshold</button>
     <ReactMapGL
