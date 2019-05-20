@@ -4,9 +4,6 @@ A 24 hour project designed by Richard Lorenzini, Gregory Priznar, Shaun Colley, 
 # H-Town Hub Bub!
 **H-Town Hub Bub! is a website designed by four individuals, Mike, Alpa, Richard, and Kanwal, as a Digital Crafts project.**
 The website is live <a href="https://optimistic-yonath-25c712.netlify.com/">HERE.</a> 
-<br>
-For testing purposes, a user has been set up for visitors.<br>
-
 
 
 
