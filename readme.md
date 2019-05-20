@@ -10,7 +10,7 @@
 
 # How It Works
 **Heat Map**
-<img src="homepage.png"/>
+<img src="images/hackathonmain.png"/>
 <p>EXPLAIN STUFF</p>
 
 
