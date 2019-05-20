@@ -11,7 +11,7 @@
 # How It Works
 **Heat Map**
 <img src="images/hackathonmain.png"/>
-<p>EXPLAIN STUFF</p>
+<p>The application loads a heatmap with populated data from our database. The data shown represents user contributions of local decibel readings. The louder the reading, the more red the heatmap display. The more readings captured, the more dense the heatmap becomes. The map loads into the Houston area but can be utilized globally.</p>
 
 
 **Contribute Decibel Readings**
