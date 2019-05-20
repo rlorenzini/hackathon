@@ -50,8 +50,8 @@ const ButtonLabel = styled.label`
 `;
 
 const initialState = {
-  lat: navigator.geolocation.lat,
-  lng: navigator.geolocation.lng,
+  lat: null,
+  lng: null,
   dB: 0,
   averageDb: null,
   errorVisible: false,
