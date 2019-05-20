@@ -11,7 +11,7 @@ For testing purposes, a user has been set up for visitors.<br>
 
 
 # Watch It In Action
-<img src="onthemark3.gif"/>
+<img src="decibel.gif"/>
 
 
 # How It Works
