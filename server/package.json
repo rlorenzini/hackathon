@@ -4,14 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
     "express": "^4.17.0",
     "express-session": "^1.16.1",
+    "moment": "^2.24.0",
     "pg": "^7.11.0",
     "pg-promise": "^8.7.2",
     "sequelize": "^5.8.6"
